@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Node.js CD Demo — TRI UGM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0ea5e9 100%);
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .logo {
+      width: 48px; height: 48px;
+      background: #fff;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    header h1 { font-size: 22px; font-weight: 700; }
+    header p  { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+    .badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    main { max-width: 860px; margin: 40px auto; padding: 0 20px; }
+
+    /* Status card */
+    .status-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 20px;
+    }
+    .stat { text-align: center; }
+    .stat-val {
+      font-size: 28px;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .stat-val.green { color: #4ade80; }
+    .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+    /* Health badge */
+    #health-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #14532d;
+      color: #4ade80;
+      border: 1px solid #166534;
+      margin-bottom: 24px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Task manager */
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 16px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus { border-color: #38bdf8; }
+    button {
+      padding: 10px 20px;
+      background: #0ea5e9;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #0284c7; }
+    button.danger { background: #ef4444; }
+    button.danger:hover { background: #dc2626; }
+    button.small {
+      padding: 5px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    /* Task list */
+    .task-list { list-style: none; }
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      transition: border 0.2s;
+    }
+    .task-item:hover { border-color: #334155; }
+    .task-item.done .task-title {
+      text-decoration: line-through;
+      color: #64748b;
+    }
+    .task-title { flex: 1; font-size: 14px; }
+    .btn-row { display: flex; gap: 6px; }
+    .tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .tag.done  { background: #14532d; color: #4ade80; }
+    .tag.todo  { background: #1e3a5f; color: #38bdf8; }
+
+    /* API response */
+    .api-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #a5f3fc;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 20px;
+      color: #475569;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🟢</div>
+  <div>
+    <h1>Node.js CD Demo</h1>
+    <p>Bukti teknis CI/CD GitHub Actions — Program Studi TRI, Universitas Gadjah Mada</p>
+  </div>
+  <div class="badge">Express.js v4</div>
+</header>
+
+<main>
+
+  <!-- Health status -->
+  <div id="health-badge">
+    <div class="dot"></div>
+    <span id="health-text">Mengecek status...</span>
+  </div>
+
+  <!-- Stats -->
+  <div class="status-card">
+    <div class="stat">
+      <div class="stat-val green" id="stat-status">—</div>
+      <div class="stat-label">Status Aplikasi</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="stat-framework">—</div>
+      <div class="stat-label">Framework</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="stat-node">—</div>
+      <div class="stat-label">Versi Node.js</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="stat-uptime">—</div>
+      <div class="stat-label">Uptime Server</div>
+    </div>
+  </div>
+
+  <!-- Task Manager -->
+  <div class="card">
+    <h2>📋 Task Manager — Demo CRUD</h2>
+    <div class="input-row">
+      <input type="text" id="task-input" placeholder="Tambah task baru..." />
+      <button onclick="addTask()">+ Tambah</button>
+    </div>
+    <ul class="task-list" id="task-list">
+      <li style="color:#64748b;font-size:14px;">Memuat task...</li>
+    </ul>
+  </div>
+
+  <!-- Health Check API Response -->
+  <div class="card">
+    <h2>🔍 Response /api/health (Live)</h2>
+    <div class="api-box" id="api-response">Memuat...</div>
+  </div>
+
+</main>
+
+<footer>
+  Implementasi Continuous Deployment Otomatis Web Application Menggunakan GitHub Actions pada VPS<br/>
+  Program Studi Teknologi Rekayasa Internet — Universitas Gadjah Mada
+</footer>
+
+<script>
+  // ── Fetch health ──────────────────────────────────────
+  async function fetchHealth() {
+    try {
+      const res  = await fetch('/api/health');
+      const data = await res.json();
+      document.getElementById('health-text').textContent    = 'Aplikasi berjalan normal';
+      document.getElementById('stat-status').textContent    = data.status.toUpperCase();
+      document.getElementById('stat-framework').textContent = data.framework;
+      document.getElementById('stat-node').textContent      = data.version;
+      document.getElementById('stat-uptime').textContent    = data.uptime;
+      document.getElementById('api-response').textContent   = JSON.stringify(data, null, 2);
+    } catch(e) {
+      document.getElementById('health-text').textContent = 'Gagal terhubung ke server';
+    }
+  }
+
+  // ── Fetch tasks ───────────────────────────────────────
+  async function fetchTasks() {
+    const res   = await fetch('/api/tasks');
+    const data  = await res.json();
+    const list  = document.getElementById('task-list');
+    list.innerHTML = '';
+    if (!data.data.length) {
+      list.innerHTML = '<li style="color:#64748b;font-size:14px;padding:12px 0;">Belum ada task.</li>';
+      return;
+    }
+    data.data.forEach(t => {
+      const li = document.createElement('li');
+      li.className = `task-item ${t.done ? 'done' : ''}`;
+      li.innerHTML = `
+        <span class="task-title">${t.title}</span>
+        <span class="tag ${t.done ? 'done' : 'todo'}">${t.done ? 'Selesai' : 'Belum'}</span>
+        <div class="btn-row">
+          <button class="small" onclick="toggleTask(${t.id})">${t.done ? 'Batal' : 'Selesai'}</button>
+          <button class="small danger" onclick="deleteTask(${t.id})">Hapus</button>
+        </div>`;
+      list.appendChild(li);
+    });
+  }
+
+  async function addTask() {
+    const inp = document.getElementById('task-input');
+    if (!inp.value.trim()) return;
+    await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: inp.value.trim() })
+    });
+    inp.value = '';
+    fetchTasks();
+  }
+
+  async function toggleTask(id) {
+    await fetch(`/api/tasks/${id}`, { method: 'PUT' });
+    fetchTasks();
+  }
+
+  async function deleteTask(id) {
+    await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+    fetchTasks();
+  }
+
+  document.getElementById('task-input').addEventListener('keypress', e => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  // Init
+  fetchHealth();
+  fetchTasks();
+  setInterval(fetchHealth, 10000);
+</script>
+</body>
+</html>

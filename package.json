@@ -1,0 +1,24 @@
+{
+  "name": "node-cd-demo",
+  "version": "1.0.0",
+  "description": "Demo aplikasi Node.js/Express untuk bukti teknis CI/CD GitHub Actions",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest --forceExit --detectOpenHandles"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 10000
+  },
+  "author": "TRI UGM - CI/CD Demo",
+  "license": "MIT"
+}
