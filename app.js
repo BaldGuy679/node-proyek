@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─────────────────────────────────────────────
-// In-memory data (demo)
+// In-memory database (demo)
 // ─────────────────────────────────────────────
 const tasks = [
   { id: 1, title: 'Implementasi CI/CD dengan GitHub Actions', done: true },
@@ -26,12 +26,12 @@ let nextId = 4;
 // Routes
 // ─────────────────────────────────────────────
 
-// Home page
+// Home
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Health check (WAJIB untuk CI/CD)
+// Health check (CI/CD)
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
@@ -75,7 +75,7 @@ app.post('/api/tasks', (req, res) => {
   });
 });
 
-// Toggle task status
+// Toggle task
 app.put('/api/tasks/:id', (req, res) => {
   const id = parseInt(req.params.id);
 
@@ -118,11 +118,19 @@ app.delete('/api/tasks/:id', (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// Start server (FIX UTAMA KAMU)
+// START SERVER (SAFE FOR PM2 + SAFE FOR TEST)
 // ─────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
-  console.log(`🔎 Health check: http://localhost:${PORT}/api/health`);
-});
+function startServer() {
+  return app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
+    console.log(`🔎 Health check: http://localhost:${PORT}/api/health`);
+  });
+}
 
+// hanya jalan kalau file dieksekusi langsung (PM2 aman, test aman)
+if (require.main === module) {
+  startServer();
+}
+
+// export untuk testing (supertest / jest)
 module.exports = app;
