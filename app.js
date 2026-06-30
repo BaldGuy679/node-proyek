@@ -23,16 +23,16 @@ const tasks = [
 let nextId = 4;
 
 // ─────────────────────────────────────────────
-// Routes
+// ROUTES
 // ─────────────────────────────────────────────
 
-// Home
+// Home page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ─────────────────────────────────────────────
-// HEALTH CHECK (FIX UTAMA UNTUK UNIT TEST)
+// HEALTH CHECK (WAJIB UNTUK CI/CD + UNIT TEST)
 // ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -43,6 +43,10 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// ─────────────────────────────────────────────
+// TASK API
+// ─────────────────────────────────────────────
 
 // Get all tasks
 app.get('/api/tasks', (req, res) => {
@@ -78,7 +82,7 @@ app.post('/api/tasks', (req, res) => {
   });
 });
 
-// Toggle task
+// Toggle task status
 app.put('/api/tasks/:id', (req, res) => {
   const id = parseInt(req.params.id);
 
@@ -121,18 +125,12 @@ app.delete('/api/tasks/:id', (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// START SERVER (AMAN UNTUK TEST + PM2)
+// START SERVER (FIX FINAL - STABIL UNTUK PM2 + CI/CD)
 // ─────────────────────────────────────────────
-function startServer() {
-  return app.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
-    console.log(`🔎 Health check: http://localhost:${PORT}/api/health`);
-  });
-}
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
+  console.log(`🔎 Health check: http://localhost:${PORT}/api/health`);
+});
 
-// hanya jalan jika file dieksekusi langsung (PM2 safe + test safe)
-if (require.main === module) {
-  startServer();
-}
-
+// export untuk testing (supertest / jest)
 module.exports = app;
