@@ -31,13 +31,16 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Health check (CI/CD)
+// ─────────────────────────────────────────────
+// HEALTH CHECK (FIX UTAMA UNTUK UNIT TEST)
+// ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
+    framework: 'Node.js / Express',
+    version: process.version,
     uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV || 'development'
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -118,7 +121,7 @@ app.delete('/api/tasks/:id', (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// START SERVER (SAFE FOR PM2 + SAFE FOR TEST)
+// START SERVER (AMAN UNTUK TEST + PM2)
 // ─────────────────────────────────────────────
 function startServer() {
   return app.listen(PORT, '0.0.0.0', () => {
@@ -127,10 +130,9 @@ function startServer() {
   });
 }
 
-// hanya jalan kalau file dieksekusi langsung (PM2 aman, test aman)
+// hanya jalan jika file dieksekusi langsung (PM2 safe + test safe)
 if (require.main === module) {
   startServer();
 }
 
-// export untuk testing (supertest / jest)
 module.exports = app;
